@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/tools"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
+    app:ignore="NamespaceTypo">
+
+    <!--class 设置自定义Bind名称-->
+    <data>
+        <!--导包-->
+        <import type="android.view.View" />
+
+        <import type="com.lixiaomi.mvvmbaselibapplication.bean.UserBean" />
+
+        <import type="android.databinding.ObservableMap" />
+
+        <import type="android.databinding.ObservableList" />
+        <!--导入方法-->
+        <import type="com.lixiaomi.mvvmbaselibapplication.utils.TestUtil" />
+
+        <import type="com.lixiaomi.mvvmbaselibapplication.MainActivity.MainActivityPersenter" />
+
+        <!--alias:别名-->
+        <import
+            alias="posUserBean"
+            type="com.lixiaomi.mvvmbaselibapplication.paramenterBean.ParameterUserBean" />
+
+        <variable
+            name="user"
+            type="UserBean" />
+
+        <variable
+            name="posUser"
+            type="posUserBean" />
+
+        <variable
+            name="list"
+            type="ObservableList&lt;String&gt;" />
+
+        <variable
+            name="map1"
+            type="ObservableMap&lt;String,String&gt;" />
+
+        <variable
+            name="key"
+            type="String" />
+
+        <variable
+            name="imageurl"
+            type="String" />
+
+        <variable
+            name="persenter"
+            type="MainActivityPersenter" />
+
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="下边是单向绑定" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="userBean" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!--使用@{variable.name.属性名称}来引用bean的属性值，default设置默认-->
+            <TextView
+                android:id="@+id/user_name_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{user.userName,default=xiaomi}" />
+
+            <TextView
+                android:id="@+id/user_sex_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{user.userSex,default=男}" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="posUserBean" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/pos_user_name_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{posUser.userName,default=xiaomi1}" />
+
+            <TextView
+                android:id="@+id/pos_user_sex_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{posUser.userSex,default=男1}" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{posUser.userNike.get(`userNikeName`)}" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="map_value:" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{map1.get(`testMap11`),default=asdda}" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="30dp"
+                android:text="@{map1[`testMap11`],default=a11sdda}"
+                android:textColor="@color/colorAccent" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="list_value:" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{list.get(0)}" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{()->persenter.updateUserName(user)}"
+                android:text="update" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{()->persenter.reductionData()}"
+                android:text="还原" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="这里是双向绑定" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@={ user.userName }" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="调用方法：" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{TestUtil.StringTest(`方法参数`),default=lalal}" />
+
+        </LinearLayout>
+
+        <!--隐式更新注意：这里被引用的控件id不能包含‘_’-->
+        <CheckBox
+            android:id="@+id/test_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="隐式更新及自定义属性" />
+
+        <!--android:visibility="@{checkbox.checked ? View.VISIBLE : View.INVISIBLE}"-->
+        <!---->
+        <ImageView
+            android:id="@+id/test_imageview"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:visibility="@{testCheck.checked ? View.VISIBLE : View.GONE}"
+            app:imageUrl="@{posUser.userImage}" />
+
+
+        <!--调用点击事件-->
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{()->persenter.intent()}"
+            android:text="去新页面看recyclerview的相关用法" />
+
+        <!--调用点击事件-->
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{()->persenter.login()}"
+            android:text="做个登陆模块" />
+
+
+    </LinearLayout>
+
+</layout>

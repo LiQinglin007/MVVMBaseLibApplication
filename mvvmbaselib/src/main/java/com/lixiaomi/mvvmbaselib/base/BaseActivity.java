@@ -14,10 +14,12 @@ import com.lixiaomi.baselib.utils.BaseAppManager;
 import com.lixiaomi.mvvmbaselib.R;
 
 
-public abstract class BaseActivity<L extends BaseLifeCycle, B extends ViewDataBinding>
+public abstract class BaseActivity<L extends BaseLifeCycle, B extends ViewDataBinding, VM extends BaseViewModel>
         extends AppCompatActivity {
+    protected final String TAG = this.getClass().getSimpleName();
     protected B mDataBinding;
     protected L mLifeCycle;
+    protected VM mViewModel;
     /**
      * 设置状态栏
      */
@@ -28,24 +30,38 @@ public abstract class BaseActivity<L extends BaseLifeCycle, B extends ViewDataBi
         super.onCreate(savedInstanceState);
         initData();
         BaseAppManager.getInstance().addActivity(this);
-        mDataBinding = DataBindingUtil.setContentView(this, layout());
-        getLifecycle().addObserver(createLifeCycle());
-        init();
-
-        //设置透明(隐藏)状态栏
-        if (setStatusBarColor() == 0) {
-            //透明状态栏，不写默认透明色
-            mImmersionBar = ImmersionBar.with(this).transparentStatusBar();
-        } else {
-            //fitsSystemWindows属性,必须指定状态栏颜色
-            mImmersionBar = ImmersionBar.with(this)
-                    .fitsSystemWindows(true)
-                    .statusBarColor(setStatusBarColor());
+        if (setLayout() != 0) {
+            try {
+                mDataBinding = DataBindingUtil.setContentView(this, setLayout());
+                if (createLifeCycle() != null) {
+                    mLifeCycle = createLifeCycle();
+                    getLifecycle().addObserver(mLifeCycle);
+                }
+                if (creatViewModel() != null) {
+                    mViewModel = creatViewModel();
+                    mViewModel.setLifeCycle(mLifeCycle);
+                }
+            } catch (RuntimeException e) {
+                //如果layout 没有设置databinding布局，就不获取mDataBinding了
+                setContentView(setLayout());
+            }
+            initView(savedInstanceState);
+            //设置透明(隐藏)状态栏
+            if (setStatusBarColor() == 0) {
+                //透明状态栏，不写默认透明色
+                mImmersionBar = ImmersionBar.with(this).transparentStatusBar();
+            } else {
+                //fitsSystemWindows属性,必须指定状态栏颜色
+                mImmersionBar = ImmersionBar.with(this)
+                        .fitsSystemWindows(true)
+                        .statusBarColor(setStatusBarColor());
+            }
+            //所有子类都将继承这些相同的属性
+            mImmersionBar.init();
+            startListenerData();
         }
-        //所有子类都将继承这些相同的属性
-        mImmersionBar.init();
-        startListenerData();
     }
+
 
     /**
      * 页面初始化数据
@@ -57,11 +73,9 @@ public abstract class BaseActivity<L extends BaseLifeCycle, B extends ViewDataBi
      *
      * @return
      */
-    protected abstract int layout();
+    protected abstract int setLayout();
 
-    protected abstract void init();
-
-    protected abstract L createLifeCycle();
+    protected abstract void initView(@Nullable Bundle savedInstanceState);
 
     /**
      * 监听数据
@@ -69,11 +83,33 @@ public abstract class BaseActivity<L extends BaseLifeCycle, B extends ViewDataBi
     protected abstract void startListenerData();
 
     /**
+     * 创建LifeCycle
+     *
+     * @return
+     */
+    protected abstract L createLifeCycle();
+
+    /**
+     * 创建viewModel
+     *
+     * @return
+     */
+    protected abstract VM creatViewModel();
+
+    /**
      * 设置顶部状态栏颜色
      *
      * @return 0 隐藏状态栏  其他要传R.color资源进来
      */
     protected abstract int setStatusBarColor();
+
+    protected void setLoading(boolean flag) {
+        if (flag) {
+            showLoading();
+        } else {
+            hideLoading();
+        }
+    }
 
     protected void showLoading() {
         try {

@@ -3,12 +3,13 @@ package com.lixiaomi.mvvmbaselibapplication.loginModule;
 
 import android.arch.lifecycle.MutableLiveData;
 
+import com.lixiaomi.baselib.config.AppConfigInIt;
+import com.lixiaomi.baselib.utils.NetWorkUtils;
 import com.lixiaomi.mvvmbaselib.base.BaseModel;
 import com.lixiaomi.mvvmbaselib.base.BaseViewModel;
 import com.lixiaomi.mvvmbaselib.base.MyPresenterCallBack;
 import com.lixiaomi.mvvmbaselib.baseBean.TitleBean;
 import com.lixiaomi.mvvmbaselibapplication.R;
-import com.lixiaomi.mvvmbaselibapplication.loginModule.bean.LoginActivityBean;
 import com.lixiaomi.mvvmbaselibapplication.loginModule.bean.SendLoginBean;
 
 import java.util.ArrayList;
@@ -20,43 +21,30 @@ import java.util.ArrayList;
  * @remarks：<br>
  * @changeTime:<br>
  */
-public class LoginViewModel extends BaseViewModel<BaseModel> {
+public class LoginViewModel extends BaseViewModel<BaseModel, LoginActivityLife> {
 
     MutableLiveData<SendLoginBean> mSendLoginBeanLiveData;
-    MutableLiveData<LoginActivityBean> mLoginActivityBeanLiveData;
     MutableLiveData<TitleBean> mTitleBeanLiveData;
+    MutableLiveData<String> mResponse = new MutableLiveData<>();
     int number = 0;
 
     public MutableLiveData<SendLoginBean> getmSendLoginBeanLiveData() {
         return mSendLoginBeanLiveData;
     }
 
-
-    public MutableLiveData<LoginActivityBean> getmLoginActivityBeanLiveData() {
-        return mLoginActivityBeanLiveData;
-    }
-
     public MutableLiveData<TitleBean> getmTitleBeanLiveData() {
         return mTitleBeanLiveData;
     }
 
-    public MutableLiveData<Boolean> getmShowLoading() {
-        return mShowLoading;
+    public MutableLiveData<String> getmResponse() {
+        return mResponse;
     }
 
     public LoginViewModel() {
-        super(false);
-
         SendLoginBean sendLoginBean = new SendLoginBean("lixiaomi", "123456");
         mSendLoginBeanLiveData = new MutableLiveData<SendLoginBean>();
         mSendLoginBeanLiveData.setValue(sendLoginBean);
-
-        LoginActivityBean loginActivityBean = new LoginActivityBean("未登陆");
-        mLoginActivityBeanLiveData = new MutableLiveData<LoginActivityBean>();
-        mLoginActivityBeanLiveData.setValue(loginActivityBean);
-
         mSendLoginBeanLiveData.setValue(new SendLoginBean("lixiaomi", "123456"));
-        mLoginActivityBeanLiveData.setValue(new LoginActivityBean("未登陆"));
 
         TitleBean builder = new TitleBean().builder()
                 .setBackGroundColor(R.color.color_51D8BA_0x)
@@ -78,13 +66,22 @@ public class LoginViewModel extends BaseViewModel<BaseModel> {
             @Override
             public void success(int code, String response) {
                 mShowLoading.setValue(false);
-                mLoginActivityBeanLiveData.setValue(new LoginActivityBean(number + "登陆成功,code:" + code + "  response: " + response));
+                mResponse.setValue(number + "登陆成功,code:" + code + "  response: " + response);
+            }
+
+            @Override
+            public void error(String message) {
+                mShowLoading.setValue(false);
+                mResponse.setValue("");
+                mToastMessage.setValue(message);
             }
 
             @Override
             public void failure(Throwable e) {
                 mShowLoading.setValue(false);
-                mLoginActivityBeanLiveData.setValue(new LoginActivityBean("登陆失败:" + e.toString()));
+                mResponse.setValue("");
+                mToastMessage.setValue("登陆失败：" + AppConfigInIt.getApplicationContext().getResources().getString(
+                        NetWorkUtils.isNetworkConnected(AppConfigInIt.getApplicationContext()) ? R.string.http_onFailure : R.string.http_NoNetWorkError));
             }
         });
     }
@@ -96,13 +93,22 @@ public class LoginViewModel extends BaseViewModel<BaseModel> {
             @Override
             public void success(int code, String response) {
                 mShowLoading.setValue(false);
-                mLoginActivityBeanLiveData.setValue(new LoginActivityBean(number + "退出登陆成功,code:" + code + "  response: " + response));
+                mResponse.setValue(number + "退出登陆成功,code:" + code + "  response: " + response);
+            }
+
+            @Override
+            public void error(String message) {
+                mShowLoading.setValue(false);
+                mResponse.setValue("");
+                mToastMessage.setValue(message);
             }
 
             @Override
             public void failure(Throwable e) {
                 mShowLoading.setValue(false);
-                mLoginActivityBeanLiveData.setValue(new LoginActivityBean("退出登陆失败:" + e.toString()));
+                mResponse.setValue("");
+                mToastMessage.setValue("退出登陆失败：" + AppConfigInIt.getApplicationContext().getResources().getString(
+                        NetWorkUtils.isNetworkConnected(AppConfigInIt.getApplicationContext()) ? R.string.http_onFailure : R.string.http_NoNetWorkError));
             }
         });
     }

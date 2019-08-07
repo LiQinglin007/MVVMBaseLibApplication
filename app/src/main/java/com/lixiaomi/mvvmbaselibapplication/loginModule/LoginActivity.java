@@ -2,19 +2,19 @@ package com.lixiaomi.mvvmbaselibapplication.loginModule;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.view.View;
+import android.widget.TextView;
 
-import com.lixiaomi.baselib.utils.LogUtils;
-import com.lixiaomi.baselib.utils.MiJsonUtil;
+import com.lixiaomi.baselib.utils.T;
 import com.lixiaomi.mvvmbaselib.base.BaseActivity;
 import com.lixiaomi.mvvmbaselib.baseBean.TitleBean;
 import com.lixiaomi.mvvmbaselibapplication.R;
 import com.lixiaomi.mvvmbaselibapplication.databinding.ActivityLoginBinding;
-import com.lixiaomi.mvvmbaselibapplication.loginModule.bean.LoginActivityBean;
 
 
 /**
@@ -24,8 +24,7 @@ import com.lixiaomi.mvvmbaselibapplication.loginModule.bean.LoginActivityBean;
  * @remarks：<br>
  * @changeTime:<br>
  */
-public class LoginActivity extends BaseActivity<LoginActivityLife, ActivityLoginBinding> implements View.OnClickListener {
-    LoginViewModel loginViewModel;
+public class LoginActivity extends BaseActivity<LoginActivityLife, ActivityLoginBinding, LoginViewModel> implements View.OnClickListener {
 
     private LinearLayoutCompat mTopLy;
     private LinearLayoutCompat mTopLeftLy;
@@ -34,6 +33,8 @@ public class LoginActivity extends BaseActivity<LoginActivityLife, ActivityLogin
     private AppCompatImageView mTopLeftImg;
     private AppCompatTextView mTopRightTv;
     private AppCompatImageView mTopRightImg;
+    private TextView mResponseTv;
+
 
     @Override
     protected void initData() {
@@ -41,17 +42,16 @@ public class LoginActivity extends BaseActivity<LoginActivityLife, ActivityLogin
     }
 
     @Override
-    protected int layout() {
+    protected int setLayout() {
         return R.layout.activity_login;
     }
 
     @Override
-    protected void init() {
-        loginViewModel = ViewModelProviders.of(LoginActivity.this).get(LoginViewModel.class);
-        mDataBinding.setLoginActivityBean(loginViewModel.getmLoginActivityBeanLiveData().getValue());
-        mDataBinding.setLoginBean(loginViewModel.getmSendLoginBeanLiveData().getValue());
-        mDataBinding.setPersenter(loginViewModel);
+    protected void initView(@Nullable Bundle savedInstanceState) {
 
+        mResponseTv = findViewById(R.id.http_response_tv);
+        mDataBinding.setLoginBean(mViewModel.getmSendLoginBeanLiveData().getValue());
+        mDataBinding.setPersenter(mViewModel);
 
         mTopLy = findViewById(R.id.top_ly);
         mTopLeftLy = findViewById(R.id.top_back_ly);
@@ -63,8 +63,9 @@ public class LoginActivity extends BaseActivity<LoginActivityLife, ActivityLogin
 
         mTopLeftLy.setOnClickListener(this);
         mTopRightLy.setOnClickListener(this);
-        setTopData(loginViewModel.getmTitleBeanLiveData().getValue());
+        setTopData(mViewModel.getmTitleBeanLiveData().getValue());
     }
+
 
     @Override
     protected LoginActivityLife createLifeCycle() {
@@ -72,31 +73,39 @@ public class LoginActivity extends BaseActivity<LoginActivityLife, ActivityLogin
     }
 
     @Override
+    protected LoginViewModel creatViewModel() {
+        return ViewModelProviders.of(LoginActivity.this).get(LoginViewModel.class);
+    }
+
+    @Override
     protected void startListenerData() {
-        loginViewModel.getmLoginActivityBeanLiveData().observe(this, new Observer<LoginActivityBean>() {
-            @Override
-            public void onChanged(@Nullable LoginActivityBean loginActivityBean) {
-                LogUtils.loge(MiJsonUtil.getJson(loginActivityBean));
-                mDataBinding.setLoginActivityBean(loginActivityBean);
-            }
-        });
-
-
-        loginViewModel.getmShowLoading().observe(this, new Observer<Boolean>() {
+        mViewModel.getmShowLoading().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
-                if (aBoolean) {
-                    showLoading();
-                } else {
-                    hideLoading();
-                }
+                setLoading(aBoolean);
             }
         });
 
-        loginViewModel.getmTitleBeanLiveData().observe(this, new Observer<TitleBean>() {
+
+        mViewModel.getmToastMessage().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String s) {
+                T.shortToast(LoginActivity.this, s);
+            }
+        });
+
+
+        mViewModel.getmTitleBeanLiveData().observe(this, new Observer<TitleBean>() {
             @Override
             public void onChanged(@Nullable TitleBean titleBean) {
                 setTopData(titleBean);
+            }
+        });
+
+        mViewModel.getmResponse().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String response) {
+                mResponseTv.setText(response);
             }
         });
     }
@@ -107,7 +116,7 @@ public class LoginActivity extends BaseActivity<LoginActivityLife, ActivityLogin
      * @param titleBean
      */
     public void setTopData(TitleBean titleBean) {
-        if(titleBean==null){
+        if (titleBean == null) {
             return;
         }
         mTopTitleTv.setText(titleBean.getTitle());

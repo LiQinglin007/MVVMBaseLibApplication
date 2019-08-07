@@ -1,9 +1,12 @@
 package com.lixiaomi.mvvmbaselibapplication.loginModule;
 
 
+import com.lixiaomi.baselib.config.AppConfigInIt;
 import com.lixiaomi.baselib.net.okhttp.MiOkHttpCallBack;
 import com.lixiaomi.baselib.net.okhttp.MiSendRequestOkHttp;
 import com.lixiaomi.mvvmbaselib.base.MyPresenterCallBack;
+import com.lixiaomi.mvvmbaselibapplication.R;
+import com.lixiaomi.mvvmbaselibapplication.http.HttpData;
 import com.lixiaomi.mvvmbaselibapplication.http.MyUrl;
 import com.lixiaomi.mvvmbaselibapplication.loginModule.bean.SendLoginBean;
 
@@ -27,6 +30,14 @@ public class LoginModelImpl implements LoginModel {
         MiSendRequestOkHttp.sendPost(null, map, MyUrl.getLoginPost(), 0, new MiOkHttpCallBack() {
             @Override
             public void onSuccess(int code, String response) {
+                if (code != HttpData.HTTP_SUCCESS_CODE) {
+                    myPresenterCallBack.error(AppConfigInIt.getApplicationContext().getResources().getString(R.string.http_ServiceError));
+                    return;
+                }
+                if (response.contains(HttpData.SERVER_ERROR_STR)) {
+                    myPresenterCallBack.error(AppConfigInIt.getApplicationContext().getResources().getString(R.string.http_ServiceError));
+                    return;
+                }
                 myPresenterCallBack.success(code, response);
             }
 
@@ -42,6 +53,14 @@ public class LoginModelImpl implements LoginModel {
         MiSendRequestOkHttp.sendGet(null, null, MyUrl.getLoginOutGet(), 0, new MiOkHttpCallBack() {
             @Override
             public void onSuccess(int code, String response) {
+                if (code != HttpData.HTTP_SUCCESS_CODE) {
+                    myPresenterCallBack.error(AppConfigInIt.getApplicationContext().getResources().getString(R.string.http_ServiceError));
+                    return;
+                }
+                if (response.contains(HttpData.SERVER_ERROR_STR)) {
+                    myPresenterCallBack.error(AppConfigInIt.getApplicationContext().getResources().getString(R.string.http_ServiceError));
+                    return;
+                }
                 myPresenterCallBack.success(code, response);
             }
 

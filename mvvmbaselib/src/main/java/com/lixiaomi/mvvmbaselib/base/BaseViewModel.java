@@ -14,12 +14,29 @@ import java.util.ArrayList;
  * @remarks：<br>
  * @changeTime:<br>
  */
-public abstract class BaseViewModel<M extends BaseModel> extends ViewModel {
-    protected  MutableLiveData<Boolean> mShowLoading;
+public abstract class BaseViewModel<M extends BaseModel, L extends BaseLifeCycle> extends ViewModel {
+    protected MutableLiveData<Boolean> mShowLoading = new MutableLiveData<>();
+    protected MutableLiveData<String> mToastMessage = new MutableLiveData<>();
+    protected L mLifeCycle;
 
-    public BaseViewModel(Boolean showLoading) {
-        this.mShowLoading = new MutableLiveData<>();
-        mShowLoading.setValue(showLoading);
+    public BaseViewModel() {
+        mShowLoading.setValue(false);
+    }
+
+    public void setLifeCycle(L lifeCycle) {
+        mLifeCycle = lifeCycle;
+    }
+
+    public L getLifeCycle() {
+        return mLifeCycle;
+    }
+
+    public MutableLiveData<Boolean> getmShowLoading() {
+        return mShowLoading;
+    }
+
+    public MutableLiveData<String> getmToastMessage() {
+        return mToastMessage;
     }
 
     /**

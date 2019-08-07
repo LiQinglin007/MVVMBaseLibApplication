@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.0.1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -25,12 +25,118 @@ android {
     }
 }
 
-dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    api 'com.lixiaomi:baselib:1.0.3'
-    api 'android.arch.lifecycle:extensions:1.1.1'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+ext {
+    baseLib = "1.0.6"
 }
+
+dependencies {
+    api fileTree(dir: 'libs', include: ['*.jar'])
+    api "com.lixiaomi:baselib:$baseLib"
+}
+
+
+//生成源文件
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+//生成文档
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    options.encoding "UTF-8"
+    options.charSet 'UTF-8'
+    options.author true
+    options.version true
+    options.links ""
+    failOnError false
+}
+
+//文档打包成jar
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+//拷贝javadoc文件
+task copyDoc(type: Copy) {
+    from "${buildDir}/docs/"
+    into "docs"
+}
+
+//上传到jcenter所需要的源码文件
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+// 配置maven库，生成POM.xml文件
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                name 'Android MVVMBaseLib Application.'
+                url 'https://github.com/LiQinglin007/MVVMBaseLibApplication'
+                licenses {
+                    license {
+                        name 'Android MVVMBaseLib Application.'
+                        url 'https://github.com/LiQinglin007/MVVMBaseLibApplication'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'lixiaomi0007'
+                        //填写邮件地址
+                        email 'liqinglin0007nice@gmail.com'
+                    }
+                }
+                scm {
+                    connection 'https://github.com/LiQinglin007/MVVMBaseLibApplication.git'
+                    developerConnection 'https://github.com/LiQinglin007/MVVMBaseLibApplication.git'
+                    url 'https://github.com/LiQinglin007/MVVMBaseLibApplication'
+                }
+                //这里有引号，并且有个空格，否则生成不了依赖，主要是这里的dependencies并不是build.gradle里的dependencies，而gradle会把他当成自身的dependencies处理
+                dependencies {
+                    dependency {
+                        groupId "com.lixiaomi"
+                        artifactId "baselib"
+                        version "$baseLib"
+                    }
+                }
+            }
+        }
+    }
+}
+
+//发布到组织名称名字，必须填写
+group = "com.lixiaomi"//groupId
+// 版本号，下次更新是只需要更改版本号即可
+version = "1.0.1"
+
+//上传到jcenter
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintray.user")    //读取 local.properties 文件里面的 bintray.user
+    key = properties.getProperty("bintray.apikey")   //读取 local.properties 文件里面的 bintray.apikey
+    configurations = ['archives']
+    pkg {
+        repo = 'AndroidBaseLibMVVM'//创建的仓库(Repository)名字
+        name = 'com.lixiaomi'  //发布到JCenter上的项目名字，必须填写,同groupId
+        desc = 'Android MVVMBaseLib Application.'    //项目描述
+        websiteUrl = 'https://github.com/LiQinglin007/MVVMBaseLibApplication'
+        vcsUrl = 'https://github.com/LiQinglin007/MVVMBaseLibApplication.git'
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}
+
+//gradlew install 用于将项目编译、打包生成 pom，aar 等文件；
+//gradlew bintrayUpload 用于将生成的 pom，aar 等文件上传至 bintray 仓库中；
+

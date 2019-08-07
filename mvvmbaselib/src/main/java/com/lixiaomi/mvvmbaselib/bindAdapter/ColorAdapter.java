@@ -4,7 +4,6 @@ import android.databinding.BindingAdapter;
 import android.view.View;
 
 
-
 /**
  * @describe：<br>
  * @author：Xiaomi<br>
